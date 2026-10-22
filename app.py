@@ -264,4 +264,51 @@ if submitted:
             )
 
         st.subheader("Official information")
-        st.link_button("Open the official checklist PDF",
+        st.link_button("Open the official checklist PDF", SOURCE_URL)
+        st.link_button("Visit Aaple Sarkar", PORTAL_URL)
+
+        summary = [
+            "SevaReady — Preparation Checklist",
+            "Service: Maharashtra Income Certificate",
+            "",
+            "YOUR CHECKLIST",
+            "",
+        ]
+        for item in results:
+            summary.append(f"{item['label']}: {item['status']}\n{item['detail']}\n")
+
+        summary.extend(
+            [
+                "",
+                "WHAT SHOULD I DO NEXT?",
+                "",
+            ]
+        )
+        if action_items:
+            for number, item in enumerate(action_items, start=1):
+                summary.append(f"{number}. {item['label']}: {item['detail']}")
+        else:
+            summary.append("Check the current official requirements before applying.")
+
+        summary.extend(
+            [
+                "",
+                "OFFICIAL INFORMATION",
+                f"Official checklist: {SOURCE_URL}",
+                f"Aaple Sarkar portal: {PORTAL_URL}",
+                "",
+                "IMPORTANT",
+                "Independent prototype. User-reported information only.",
+                "Not document verification, eligibility confirmation, or a guarantee of approval.",
+            ]
+        )
+
+        st.download_button(
+            "Download checklist",
+            data="\n".join(summary),
+            file_name="sevaready-checklist.txt",
+            mime="text/plain; charset=utf-8",
+        )
+
+st.divider()
+st.caption("Version 0.2: Guided preparation checklist & export tool.")
