@@ -309,6 +309,5 @@ if submitted:
             file_name="sevaready-checklist.txt",
             mime="text/plain; charset=utf-8",
         )
-
 st.divider()
 st.caption("Version 0.2: Guided preparation checklist & export tool.")
