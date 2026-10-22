@@ -1,15 +1,20 @@
 import streamlit as st
 
+
 st.set_page_config(
     page_title="SevaReady",
     page_icon="📋",
     layout="centered",
 )
 
+
 SOURCE_URL = (
     "https://aaplesarkar.mahaonline.gov.in/pdf/"
-    "Fees,%20Procedure,%20Checklist_Income%20Certificate.pdf"
+    "Fees%2C%20Procedure%2C%20Checklist_Income%20Certificate.pdf"
 )
+
+PORTAL_URL = "https://aaplesarkar.mahaonline.gov.in/en"
+
 
 st.title("📋 SevaReady")
 st.subheader("Prepare before you apply")
@@ -29,6 +34,7 @@ st.info(
     "You do not need to upload documents or enter Aadhaar numbers, "
     "income amounts, or other sensitive information."
 )
+
 
 with st.form("preparation_form"):
     st.header("Tell us what you have")
@@ -97,6 +103,7 @@ with st.form("preparation_form"):
         type="primary",
     )
 
+
 if submitted:
     required_answers = [
         applicant_age,
@@ -107,6 +114,7 @@ if submitted:
 
     if "Select an answer" in required_answers:
         st.error("Please answer each main question first.")
+
     else:
         st.header("Your preparation checklist")
 
@@ -114,7 +122,11 @@ if submitted:
 
         def add_result(label, status, detail):
             results.append(
-                {"label": label, "status": status, "detail": detail}
+                {
+                    "label": label,
+                    "status": status,
+                    "detail": detail,
+                }
             )
 
         for label, answer in [
@@ -127,12 +139,14 @@ if submitted:
                     "Needs attention",
                     "Check the official instructions for an accepted option.",
                 )
+
             elif answer == "Another document — needs checking":
                 add_result(
                     label,
                     "Needs confirmation",
                     "Confirm whether your document is accepted.",
                 )
+
             else:
                 add_result(
                     label,
@@ -150,24 +164,28 @@ if submitted:
                     "Needs attention",
                     "Choose an age-proof document and confirm requirements.",
                 )
+
             elif age_proof == "Another document — needs checking":
                 add_result(
                     "Minor's age proof",
                     "Needs confirmation",
                     "Confirm whether your age-proof document is accepted.",
                 )
+
             else:
                 add_result(
                     "Minor's age proof",
                     "Reported available",
                     f"You selected: {age_proof}. Acceptance is not verified.",
                 )
+
         elif applicant_age == "Unsure":
             add_result(
                 "Minor's age proof",
                 "Needs confirmation",
                 "Clarify the applicant's age before completing this section.",
             )
+
         else:
             add_result(
                 "Minor's age-proof section",
@@ -175,15 +193,27 @@ if submitted:
                 "Based only on your answer that the applicant is not under 18.",
             )
 
-        add_result(
-            "Self-declaration",
-            "Reported prepared" if declaration == "Yes" else "Needs attention",
-            (
-                "Confirm that it matches the official required format."
-                if declaration == "Yes"
-                else "Check the required format and prepare the declaration."
-            ),
-        )
+        if declaration == "Yes":
+            add_result(
+                "Self-declaration",
+                "Reported prepared",
+                "Confirm that it matches the official required format.",
+            )
+
+        elif declaration == "No":
+            add_result(
+                "Self-declaration",
+                "Needs attention",
+                "Check the required format and prepare the declaration.",
+            )
+
+        else:
+            add_result(
+                "Self-declaration",
+                "Needs confirmation",
+                "Check whether you have prepared the declaration "
+                "in the required format.",
+            )
 
         add_result(
             "Additional and purpose-specific attachments",
@@ -198,26 +228,96 @@ if submitted:
                 f"{item['label']} — {item['status']}\n\n"
                 f"{item['detail']}"
             )
+
             if item["status"] in [
                 "Reported available",
                 "Reported prepared",
             ]:
                 st.success(text)
+
             elif item["status"] == "Not applicable":
                 st.info(text)
+
             else:
                 st.warning(text)
 
+        st.subheader("What should I do next?")
+
+        action_items = [
+            item
+            for item in results
+            if item["status"] in [
+                "Needs attention",
+                "Needs confirmation",
+            ]
+        ]
+
+        if action_items:
+            st.write(
+                "Start with the following items. "
+                "Your answers have not been independently verified."
+            )
+
+            for number, item in enumerate(action_items, start=1):
+                st.write(
+                    f"{number}. {item['label']}: {item['detail']}"
+                )
+
+        else:
+            st.info(
+                "No missing items were identified from your answers. "
+                "Check the current official requirements before applying."
+            )
+
+        with st.expander(
+            "Does this mean my application will be approved?"
+        ):
+            st.write(
+                "No. This checklist only helps you prepare. "
+                "It does not verify your documents or guarantee approval. "
+                "The responsible authority reviews the actual application."
+            )
+
+        with st.expander(
+            "Why are some items marked 'Needs confirmation'?"
+        ):
+            st.write(
+                "Our prototype does not have enough verified information "
+                "to resolve every requirement. Confirm these items using "
+                "the current official application instructions."
+            )
+
+        with st.expander(
+            "What does 'Reported available' mean?"
+        ):
+            st.write(
+                "It means you told us that you have the selected document. "
+                "SevaReady has not inspected the document or confirmed "
+                "that it will be accepted."
+            )
+
         st.subheader("Official information")
-        st.link_button("Open the official checklist PDF", SOURCE_URL)
+
+        st.caption(
+            "Use these sources to confirm the current requirements. "
+            "Our draft service information may be incomplete."
+        )
+
+        st.link_button(
+            "Open the official checklist PDF",
+            SOURCE_URL,
+        )
+
         st.link_button(
             "Visit Aaple Sarkar",
-            "https://aaplesarkar.mahaonline.gov.in/en",
+            PORTAL_URL,
         )
 
         summary = [
             "SevaReady — Preparation Checklist",
             "Service: Maharashtra Income Certificate",
+            "",
+            "YOUR CHECKLIST",
             "",
         ]
 
@@ -229,9 +329,33 @@ if submitted:
 
         summary.extend(
             [
-                f"Official checklist: {SOURCE_URL}",
                 "",
+                "WHAT SHOULD I DO NEXT?",
+                "",
+            ]
+        )
+
+        if action_items:
+            for number, item in enumerate(action_items, start=1):
+                summary.append(
+                    f"{number}. {item['label']}: {item['detail']}"
+                )
+
+        else:
+            summary.append(
+                "Check the current official requirements before applying."
+            )
+
+        summary.extend(
+            [
+                "",
+                "OFFICIAL INFORMATION",
+                f"Official checklist: {SOURCE_URL}",
+                f"Aaple Sarkar portal: {PORTAL_URL}",
+                "",
+                "IMPORTANT",
                 "Independent prototype. User-reported information only.",
+                "Our draft service information may be incomplete.",
                 "Not document verification, eligibility confirmation, "
                 "or a guarantee of approval.",
             ]
@@ -241,11 +365,14 @@ if submitted:
             "Download checklist",
             data="\n".join(summary),
             file_name="sevaready-checklist.txt",
-            mime="text/plain",
+            mime="text/plain; charset=utf-8",
         )
 
+
 st.divider()
+
 st.caption(
-    "Version 0.1: guided checklist only. "
-    "AI explanations and additional languages are not implemented yet."
+    "Version 0.2: guided checklist, next actions, and fixed explanations. "
+    "AI-generated explanations and additional languages "
+    "are not implemented yet."
 )
