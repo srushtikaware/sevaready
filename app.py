@@ -1,12 +1,10 @@
 import streamlit as st
 
-
 st.set_page_config(
     page_title="SevaReady",
     page_icon="📋",
     layout="centered",
 )
-
 
 SOURCE_URL = (
     "https://aaplesarkar.mahaonline.gov.in/pdf/"
@@ -15,6 +13,13 @@ SOURCE_URL = (
 
 PORTAL_URL = "https://aaplesarkar.mahaonline.gov.in/en"
 
+# Guidance tips for Maharashtra revenue certificates
+GUIDANCE = {
+    "Electricity bill": "Must typically be recent (within the last 3 months) and show the current residential address.",
+    "Ration card": "Should list the household members clearly and include the applicant.",
+    "Self-declaration": "Must follow the official Annexure format available on the Aaple Sarkar portal, signed by the applicant or guardian.",
+    "Bonafide certificate": "Typically accepted for minors currently enrolled in recognized educational institutions.",
+}
 
 st.title("📋 SevaReady")
 st.subheader("Prepare before you apply")
@@ -31,10 +36,9 @@ st.warning(
 )
 
 st.info(
-    "You do not need to upload documents or enter Aadhaar numbers, "
-    "income amounts, or other sensitive information."
+    "You do not need to upload documents or enter sensitive "
+    "personal information such as identification numbers or income amounts."
 )
-
 
 with st.form("preparation_form"):
     st.header("Tell us what you have")
@@ -103,7 +107,6 @@ with st.form("preparation_form"):
         type="primary",
     )
 
-
 if submitted:
     required_answers = [
         applicant_age,
@@ -114,20 +117,13 @@ if submitted:
 
     if "Select an answer" in required_answers:
         st.error("Please answer each main question first.")
-
     else:
         st.header("Your preparation checklist")
 
         results = []
 
         def add_result(label, status, detail):
-            results.append(
-                {
-                    "label": label,
-                    "status": status,
-                    "detail": detail,
-                }
-            )
+            results.append({"label": label, "status": status, "detail": detail})
 
         for label, answer in [
             ("Identity proof", identity),
@@ -139,14 +135,12 @@ if submitted:
                     "Needs attention",
                     "Check the official instructions for an accepted option.",
                 )
-
             elif answer == "Another document — needs checking":
                 add_result(
                     label,
                     "Needs confirmation",
                     "Confirm whether your document is accepted.",
                 )
-
             else:
                 add_result(
                     label,
@@ -164,14 +158,12 @@ if submitted:
                     "Needs attention",
                     "Choose an age-proof document and confirm requirements.",
                 )
-
             elif age_proof == "Another document — needs checking":
                 add_result(
                     "Minor's age proof",
                     "Needs confirmation",
                     "Confirm whether your age-proof document is accepted.",
                 )
-
             else:
                 add_result(
                     "Minor's age proof",
@@ -185,7 +177,6 @@ if submitted:
                 "Needs confirmation",
                 "Clarify the applicant's age before completing this section.",
             )
-
         else:
             add_result(
                 "Minor's age-proof section",
@@ -199,57 +190,52 @@ if submitted:
                 "Reported prepared",
                 "Confirm that it matches the official required format.",
             )
-
         elif declaration == "No":
             add_result(
                 "Self-declaration",
                 "Needs attention",
                 "Check the required format and prepare the declaration.",
             )
-
         else:
             add_result(
                 "Self-declaration",
                 "Needs confirmation",
-                "Check whether you have prepared the declaration "
-                "in the required format.",
+                "Check whether you have prepared the declaration in the required format.",
             )
 
         add_result(
             "Additional and purpose-specific attachments",
             "Needs confirmation",
-            "Check the live official application for income-related "
-            "and purpose-specific attachments. Our draft information "
-            "does not fully resolve these requirements.",
+            "Check the live official application for income-related and purpose-specific attachments.",
         )
 
         for item in results:
-            text = (
-                f"{item['label']} — {item['status']}\n\n"
-                f"{item['detail']}"
-            )
-
-            if item["status"] in [
-                "Reported available",
-                "Reported prepared",
-            ]:
+            text = f"{item['label']} — {item['status']}\n\n{item['detail']}"
+            if item["status"] in ["Reported available", "Reported prepared"]:
                 st.success(text)
-
             elif item["status"] == "Not applicable":
                 st.info(text)
-
             else:
                 st.warning(text)
+
+        # Contextual guidance
+        selected_docs = [identity, address, age_proof]
+        if declaration == "Yes":
+            selected_docs.append("Self-declaration")
+
+        active_tips = {doc: GUIDANCE[doc] for doc in selected_docs if doc in GUIDANCE}
+
+        if active_tips:
+            with st.expander("💡 Helpful document tips & validity rules", expanded=True):
+                for doc_name, tip in active_tips.items():
+                    st.markdown(f"**{doc_name}**: {tip}")
 
         st.subheader("What should I do next?")
 
         action_items = [
             item
             for item in results
-            if item["status"] in [
-                "Needs attention",
-                "Needs confirmation",
-            ]
+            if item["status"] in ["Needs attention", "Needs confirmation"]
         ]
 
         if action_items:
@@ -257,122 +243,25 @@ if submitted:
                 "Start with the following items. "
                 "Your answers have not been independently verified."
             )
-
             for number, item in enumerate(action_items, start=1):
-                st.write(
-                    f"{number}. {item['label']}: {item['detail']}"
-                )
-
+                st.write(f"{number}. {item['label']}: {item['detail']}")
         else:
             st.info(
                 "No missing items were identified from your answers. "
                 "Check the current official requirements before applying."
             )
 
-        with st.expander(
-            "Does this mean my application will be approved?"
-        ):
-            st.write(
-                "No. This checklist only helps you prepare. "
-                "It does not verify your documents or guarantee approval. "
-                "The responsible authority reviews the actual application."
-            )
-
-        with st.expander(
-            "Why are some items marked 'Needs confirmation'?"
-        ):
-            st.write(
-                "Our prototype does not have enough verified information "
-                "to resolve every requirement. Confirm these items using "
-                "the current official application instructions."
-            )
-
-        with st.expander(
-            "What does 'Reported available' mean?"
-        ):
-            st.write(
-                "It means you told us that you have the selected document. "
-                "SevaReady has not inspected the document or confirmed "
-                "that it will be accepted."
+        with st.expander("Frequently Asked Questions"):
+            st.markdown(
+                """
+                - **Can I submit a document in my parents' name?**  
+                  For minors, parents' documents are generally accepted. For adults, electricity bills or ration cards showing your family relation may require additional proof (like an affidavit or ration card listing).
+                - **What format is needed for the self-declaration?**  
+                  It must follow the standard Government Annexure format available on the Aaple Sarkar portal.
+                - **Does this guarantee certificate approval?**  
+                  No. SevaReady is an independent preparation checklist. Final verification is conducted by the revenue authority.
+                """
             )
 
         st.subheader("Official information")
-
-        st.caption(
-            "Use these sources to confirm the current requirements. "
-            "Our draft service information may be incomplete."
-        )
-
-        st.link_button(
-            "Open the official checklist PDF",
-            SOURCE_URL,
-        )
-
-        st.link_button(
-            "Visit Aaple Sarkar",
-            PORTAL_URL,
-        )
-
-        summary = [
-            "SevaReady — Preparation Checklist",
-            "Service: Maharashtra Income Certificate",
-            "",
-            "YOUR CHECKLIST",
-            "",
-        ]
-
-        for item in results:
-            summary.append(
-                f"{item['label']}: {item['status']}\n"
-                f"{item['detail']}\n"
-            )
-
-        summary.extend(
-            [
-                "",
-                "WHAT SHOULD I DO NEXT?",
-                "",
-            ]
-        )
-
-        if action_items:
-            for number, item in enumerate(action_items, start=1):
-                summary.append(
-                    f"{number}. {item['label']}: {item['detail']}"
-                )
-
-        else:
-            summary.append(
-                "Check the current official requirements before applying."
-            )
-
-        summary.extend(
-            [
-                "",
-                "OFFICIAL INFORMATION",
-                f"Official checklist: {SOURCE_URL}",
-                f"Aaple Sarkar portal: {PORTAL_URL}",
-                "",
-                "IMPORTANT",
-                "Independent prototype. User-reported information only.",
-                "Our draft service information may be incomplete.",
-                "Not document verification, eligibility confirmation, "
-                "or a guarantee of approval.",
-            ]
-        )
-
-        st.download_button(
-            "Download checklist",
-            data="\n".join(summary),
-            file_name="sevaready-checklist.txt",
-            mime="text/plain; charset=utf-8",
-        )
-
-
-st.divider()
-
-st.caption(
-    "Version 0.2: guided checklist, next actions, and fixed explanations. "
-    "AI-generated explanations and additional languages "
-    "are not implemented yet."
-)
+        st.link_button("Open the official checklist PDF",
